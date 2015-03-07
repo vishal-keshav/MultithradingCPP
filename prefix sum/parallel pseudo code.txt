@@ -1,0 +1,30 @@
+Assumption: p in number of processes and of form 2^k for k>0
+Data length: n and n>p
+
+Step 1: Create p threads and distribute n/p data to each
+Step 2: Each process do prefix sum on its part. Copy the last sum as mysum
+Step 3: Collection phase
+Step 4: pth processor makes its mysum = 0
+Step 5: Distribution phase
+Step 6: Add mysum to all of its element distributed to it.
+
+Collection phase:
+	for i=1 to log(p):
+		if (myid+1)%2^(i) == 0:
+			otherid = myid - 2^(i-1)
+			temp = otherid's mysum
+			mysum = mysum + temp
+		else:
+			do nothing
+		Barrier for all threads
+
+Distribution phase:
+	for i=log(p) to 1:
+		if (myid+1)%2 == 0:
+			otherid = myid - 2^(i-1)
+			temp = otherid's mysum
+			otherid's mysum = mysum
+			mysum = mysum + temp
+		else:
+			do nothing
+		Barrier for all threads
