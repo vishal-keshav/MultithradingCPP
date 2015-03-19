@@ -93,7 +93,7 @@ int main(){
         data[i] = data[i-1]+data[i];
     }
     sum[t_id] = data[end-1];
-    for_each(threads.begin(),threads.end(),[](thread &t){t.join();});
+    for_each(threads.begin(),threads.end(),[this](thread &t){t.join();});
     //Serial work
     for(int i=1;i<p;i++){
         sum[i] = sum[i]+sum[i-1];
