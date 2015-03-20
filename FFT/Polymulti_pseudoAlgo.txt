@@ -7,7 +7,7 @@ Step 4: y=y1*y2
 Step 5: c = RecursiveFFTinv(y)/n;
 
 RecursiveFFT(a):
-	n=a.lenght
+	n=a.length
 	w_n = cos(2*pi/n) + i*sin(2*pi/n)
 	w=1
 	a_even = a.even
