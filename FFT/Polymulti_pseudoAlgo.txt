@@ -1,10 +1,9 @@
 Pseudo Algorithm of polynomial multiplication
 
 Step 1: Input a and b(Coefficient of two polynomial)
-Step 2: Increase degree of a and b to 2n-2
-Step 3: y1 = RecursiveFFT(a),y2=RecursiveFFT(b)
-Step 4: y=y1*y2
-Step 5: c = RecursiveFFTinv(y)/n;
+Step 2: y1 = RecursiveFFT(a),y2=RecursiveFFT(b)
+Step 3: y=y1*y2
+Step 4: c = RecursiveFFTinv(y)/n;
 
 RecursiveFFT(a):
 	n=a.length
