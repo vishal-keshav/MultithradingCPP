@@ -1,0 +1,6 @@
+possible parallelizations:
+in prod_fourier - recursiveFFT(c) with 2 threads
+in recursive FFT - filter + recursiveFFT with 2 threads and rest part serially after joining
+in point_multiply - for loop can be parallelized
+in recursiveFFTinv - similar to recursiveFFT
+in recursiveFFTinv_wrapper - for loop can be parallelized
