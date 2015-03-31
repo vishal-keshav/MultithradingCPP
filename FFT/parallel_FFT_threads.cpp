@@ -3,6 +3,8 @@
 #include <complex>
 #include <cmath>
 #include <vector>
+#include <thread>
+#include <future>
 
 using namespace std;
 //Value of pi is approximated from tan inverse
@@ -49,7 +51,7 @@ vector<T> filter(vector<T> &coeff,int k){
 
 //Recursive FFT - serial version
 template <class T>
-vector<complex<double> > recursiveFFT(vector<T> &coeff){
+vector<complex<double> > recursiveFFT(vector<T> coeff){
 	int n=coeff.size();
 	//Base case
 	if(n==1){
@@ -62,11 +64,16 @@ vector<complex<double> > recursiveFFT(vector<T> &coeff){
 		complex<double> w_n(cos((2*PI)/n),sin((2*PI)/n));
 		complex<double> w(1,0);
 		//Even and odd coefficient are sorted out
+		//auto coeff_even = async([=]{return filter(coeff,0);});
 		vector<double> coeff_even = filter(coeff,0);
 		vector<double> coeff_odd = filter(coeff,1);
 		//Recursively evalutaes polynomial at even and odd coefficient
+		auto y_odd_fut = async([=]{return recursiveFFT(coeff_odd);});
 		vector<complex<double> > y_even = recursiveFFT(coeff_even);
-		vector<complex<double> > y_odd = recursiveFFT(coeff_odd);
+		vector<complex<double> > y_odd = y_odd_fut.get();
+		/*vector<complex<double> > y_even = recursiveFFT(coeff_even.get());
+		vector<complex<double> > y_odd = recursiveFFT(coeff_odd);*/
+		
 		vector<complex<double> > y(n);
 		
 		for(int k=0;k<n/2;k++){
@@ -95,7 +102,7 @@ vector<T> point_multiply(vector<T> &p1,vector<T> &p2){
 }
 
 //Converts from n points to n-1 degree polynomial
-vector<complex<double> > recursiveFFTinv(vector<complex<double> > &points){
+vector<complex<double> > recursiveFFTinv(vector<complex<double> > points){
 	int n = points.size();
 	//Base case
 	if(n==1){
@@ -111,8 +118,10 @@ vector<complex<double> > recursiveFFTinv(vector<complex<double> > &points){
 		vector<complex<double> > points_even = filter(points,0);
 		vector<complex<double> > points_odd = filter(points,1);
 		//Recursively evalutaes polynomial at even and odd coefficient
+		auto y_odd_futs = async([=]{return recursiveFFTinv(points_odd);});
 		vector<complex<double> > y_even = recursiveFFTinv(points_even);
-		vector<complex<double> > y_odd = recursiveFFTinv(points_odd);
+		vector<complex<double> > y_odd = y_odd_futs.get();
+
 		vector<complex<double> > y(n);
 		
 		for(int k=0;k<n/2;k++){
@@ -164,18 +173,7 @@ vector<double> prod_fourier(vector<T> c1,vector<T> c2){
 	vector<T> ret = recursiveFFTinv_wrapper(multi);
 	return ret;
 }
-//Checks for the correctness
-template <class T>
-bool equate(vector<T> c1,vector<T> c2){
-	bool ret=true;
-	for(int i=0;i<c1.size();i++){
-		if((int)c1[i]!=(int)c2[i]){
-			ret = false;
-			break;
-		}
-	}
-	return ret;
-}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 int main(){
@@ -201,13 +199,6 @@ int main(){
 	vector<double> coeff_ans2 = prod_fourier(coeff1,coeff2);
 	cout << double( clock() - startTime ) / (double)CLOCKS_PER_SEC<< " seconds." << endl;
 	//show_vector(coeff_ans2);
-	/*
-	if(equate(coeff_ans1,coeff_ans2)){
-		cout << "Results perfectly match" << endl;
-	}
-	else{
-		cout << "Problem occured" << endl;
-	}
-	*/
+
 	return 0;
 }

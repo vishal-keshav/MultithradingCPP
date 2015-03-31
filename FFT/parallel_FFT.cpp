@@ -187,6 +187,18 @@ vector<double> prod_fourier(vector<T> c1,vector<T> c2){
 	vector<T> ret = recursiveFFTinv_wrapper(multi);
 	return ret;
 }
+//Checks for the correctness
+template <class T>
+bool equate(vector<T> c1,vector<T> c2){
+	bool ret=true;
+	for(int i=0;i<c1.size();i++){
+		if(c1[i]!=c2[i]){
+			ret = false;
+			break;
+		}
+	}
+	return ret;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -214,6 +226,13 @@ int main(){
 	vector<double> coeff_ans2 = prod_fourier(coeff1,coeff2);
 	cout << double( clock() - startTime ) / (double)CLOCKS_PER_SEC<< " seconds." << endl;
 	//show_vector(coeff_ans2);
-
+	/*
+	if(equate(coeff_ans1,coeff_ans2)){
+		cout << "Results perfectly match" << endl;
+	}
+	else{
+		cout << "Problem occured" << endl;
+	}
+	*/
 	return 0;
 }
