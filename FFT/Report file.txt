@@ -1,0 +1,59 @@
+
+Introduction:
+The problem is to compute the product of two polynomials given in the coefficient form.
+Coefficient can be anything from integer to decimal including complex numbers
+The basic O(n^2) running time algorithm is surpassed by using descrete Fourier transform
+which have a running time of O(nlog(n)). Two sequential algorithms have been implemented, one 
+with running time O(n^2) and other with running time O(nlog(n)) and two parallel algorithms
+have been implemented for O(nlog(n)) version, one with OpenMP and other with C++11 threads.
+Comparision has been done for the running time of different algorithms. All coding is in C++.
+______________________________________________________________________________________________
+
+Algorithm in short - O(nlog(n)):
+Step 1: Input a and b(Coefficient of two polynomial)
+Step 2: y1 = RecursiveFFT(a),y2=RecursiveFFT(b)
+Step 3: y=y1*y2
+Step 4: c = RecursiveFFTinv(y)/n;
+
+RecursiveFFT(a):
+	n=a.length
+	w_n = cos(2*pi/n) + i*sin(2*pi/n)
+	w=1
+	a_even = a.even
+	a_odd = a.odd
+	y_even = RecursiveFFT(a_even)
+	y_odd = RecursiveFFT(a_odd)
+	for k=0 to n/2-1:
+		y[k] = y_even[k] + w*y_odd[k]
+		y[k+n/2] = y_even[k] - w*y_odd[k]
+		w = w*w_n
+	return y
+
+RecursiveFFTinv(a):
+	(CHANGE in RecursiveFFT(a)): w_n = cos(-2*pi/n) + i*sin(-2*pi/n)
+______________________________________________________________________________________________
+
+Theoretical Analysis:
+Upto recursiveFFT, derivation of result is straight forward. To prove the correctness of expression
+on which recursiveFFTinv has been coded, we use the concept that summation of n roots of unity is zero.
+______________________________________________________________________________________________
+
+Program Analysis:
+Use of template supports any type of coeffecient including complex coeffecient.
+Minimum data movement has been done - optimised version of sequentialFFT.
+Non 2^k case has been also dealt.
+Future along with asynchronous function has been used in thread version.
+An asynchronous operation like async or promise provide a future object to the creator of asynchronous 
+operation. The method is blocked if future has not provided any value. 
+______________________________________________________________________________________________
+
+Experimental Analysis:
+The running time for higher input in case of sequential O(n^2) and O(nlog(n)) is contrasting but
+parallel version does not give a better performance. Reasons could be high overhead in managing 
+so many threads.
+______________________________________________________________________________________________
+
+Conclusion:
+From the observation from running time between optimised sequential and parallel code, it can be 
+concluded that parallelization is good in the senario where there are many pyhsical processors available
+to process tasks parallely.
