@@ -169,7 +169,7 @@ vector<double> prod_fourier(vector<T> c1,vector<T> c2){
 
 int main(){
 	//For non 2^k elements, use the function next_powerof2 defined above
-	int n=pow(2,3);
+	int n=pow(2,13);
 
 	//Data creation, data type is double. It can be anything like int
 	vector<double> coeff1,coeff2;

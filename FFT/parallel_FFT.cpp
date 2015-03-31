@@ -3,7 +3,7 @@
 #include <complex>
 #include <cmath>
 #include <vector>
-#include <thread>
+#include <omp.h>
 
 using namespace std;
 //Value of pi is approximated from tan inverse
@@ -40,7 +40,7 @@ vector<T> filter(vector<T> &coeff,int k){
 	int n=coeff.size();
 	int j=0;
 	vector<T> ret(n/2,0);
-
+	#pragma omp parallel for
 	for(int i=0;i<n;i=i+2){
 		ret[j] = coeff[i+k];
 		j++;
@@ -62,14 +62,20 @@ vector<complex<double> > recursiveFFT(vector<T> &coeff){
 	else{
 		complex<double> w_n(cos((2*PI)/n),sin((2*PI)/n));
 		complex<double> w(1,0);
+		vector<complex<double> > y_even;
+		vector<complex<double> > y_odd;
 		//Even and odd coefficient are sorted out
-		vector<double> coeff_even = filter(coeff,0);
-		vector<double> coeff_odd = filter(coeff,1);
-		//Recursively evalutaes polynomial at even and odd coefficient
-		vector<complex<double> > y_even = recursiveFFT(coeff_even);
-		vector<complex<double> > y_odd = recursiveFFT(coeff_odd);
+		#pragma omp parallel sections
+		{
+			{vector<double> coeff_even = filter(coeff,0);
+			y_even = recursiveFFT(coeff_even);}
+			#pragma omp section
+			{
+				vector<double> coeff_odd = filter(coeff,1);
+				y_odd = recursiveFFT(coeff_odd);
+			}
+		}
 		vector<complex<double> > y(n);
-		
 		for(int k=0;k<n/2;k++){
 			y[k] = y_even[k] + w*y_odd[k];
 			y[k + n/2] = y_even[k] - w*y_odd[k];
@@ -88,6 +94,7 @@ vector<T> point_multiply(vector<T> &p1,vector<T> &p2){
 		cout << "Size does not match" << endl;
 	}
 	else{
+		#pragma omp parallel for
 		for(int i=0;i<n;i++){
 			ret[i] = p1[i]*p2[i];
 		}
@@ -108,14 +115,21 @@ vector<complex<double> > recursiveFFTinv(vector<complex<double> > &points){
 	else{
 		complex<double> w_n(cos((-2*PI)/n),sin((-2*PI)/n));
 		complex<double> w(1,0);
+		vector<complex<double> > y_even;
+		vector<complex<double> > y_odd;
 		//Even and odd coefficient are sorted out
-		vector<complex<double> > points_even = filter(points,0);
-		vector<complex<double> > points_odd = filter(points,1);
-		//Recursively evalutaes polynomial at even and odd coefficient
-		vector<complex<double> > y_even = recursiveFFTinv(points_even);
-		vector<complex<double> > y_odd = recursiveFFTinv(points_odd);
-		vector<complex<double> > y(n);
-		
+		#pragma omp parallel sections
+		{
+			{vector<complex<double> > points_even = filter(points,0);
+			y_even = recursiveFFTinv(points_even);}
+			#pragma omp section
+			{
+				vector<complex<double> > points_odd = filter(points,1);
+				//Recursively evalutaes polynomial at even and odd coefficient
+				y_odd = recursiveFFTinv(points_odd);
+			}
+		}
+		vector<complex<double> > y(n);		
 		for(int k=0;k<n/2;k++){
 			y[k] = y_even[k] + w*y_odd[k];
 			y[k + n/2] = y_even[k] - w*y_odd[k];
@@ -131,7 +145,7 @@ vector<double> recursiveFFTinv_wrapper(vector<complex<double> > &points){
 	vector<complex<double> > coeff = recursiveFFTinv(points);
 	int n = coeff.size()-1;
 	vector<double> ret(n,0);
-	
+	#pragma omp parallel for
 	for(int i=0;i<n;i++){
 		ret[i] = real(coeff[i])/(n+1);
 	}
@@ -159,8 +173,16 @@ vector<double> prod_fourier(vector<T> c1,vector<T> c2){
 	int n = c1.size();
 	c1.resize(2*n);
 	c2.resize(2*n);
-	vector<complex<double> > vec1 = recursiveFFT(c1);
-	vector<complex<double> > vec2 = recursiveFFT(c2);
+	vector<complex<double> > vec1;
+	vector<complex<double> > vec2;
+	#pragma omp parallel sections
+	{
+		{vec1 = recursiveFFT(c1);}
+		#pragma omp section
+		{
+			vec2 = recursiveFFT(c2);
+		}
+	}
 	vector<complex<double> > multi = point_multiply(vec1,vec2);
 	vector<T> ret = recursiveFFTinv_wrapper(multi);
 	return ret;
@@ -170,7 +192,7 @@ vector<double> prod_fourier(vector<T> c1,vector<T> c2){
 
 int main(){
 	//For non 2^k elements, use the function next_powerof2 defined above
-	int n=pow(2,3);
+	int n=pow(2,13);
 
 	//Data creation, data type is double. It can be anything like int
 	vector<double> coeff1,coeff2;
