@@ -4,6 +4,7 @@
 #include <cmath>
 #include <vector>
 #include <omp.h>
+#include <fstream>
 
 using namespace std;
 //Value of pi is approximated from tan inverse
@@ -204,7 +205,13 @@ bool equate(vector<T> c1,vector<T> c2){
 
 int main(){
 	//For non 2^k elements, use the function next_powerof2 defined above
-	int n=pow(2,13);
+	int loop;
+	ofstream myfile;
+  	myfile.open ("running_time_parallel.txt");
+  	
+	for(loop =2;loop<18;loop++){
+
+	int n=pow(2,loop);
 
 	//Data creation, data type is double. It can be anything like int
 	vector<double> coeff1,coeff2;
@@ -215,16 +222,18 @@ int main(){
 
 	clock_t startTime;
 	//O(n^2)
-	startTime = clock();
+	/*startTime = clock();
 	vector<double> coeff_ans1 = prod(coeff1,coeff2);
-	cout << double( clock() - startTime ) / (double)CLOCKS_PER_SEC<< " seconds." << endl;
+	//cout << double( clock() - startTime ) / (double)CLOCKS_PER_SEC<< " seconds." << endl;
+	myfile << double( clock() - startTime ) / (double)CLOCKS_PER_SEC << " ";
 	//show_vector(coeff_ans1);
-
+	*/
 	//O(nlog(n))
 	startTime = clock();
 	
 	vector<double> coeff_ans2 = prod_fourier(coeff1,coeff2);
-	cout << double( clock() - startTime ) / (double)CLOCKS_PER_SEC<< " seconds." << endl;
+	//cout << double( clock() - startTime ) / (double)CLOCKS_PER_SEC<< " seconds." << endl;
+	myfile << double( clock() - startTime ) / (double)CLOCKS_PER_SEC << endl;
 	//show_vector(coeff_ans2);
 	/*
 	if(equate(coeff_ans1,coeff_ans2)){
@@ -234,5 +243,7 @@ int main(){
 		cout << "Problem occured" << endl;
 	}
 	*/
+	}
+	myfile.close();
 	return 0;
 }

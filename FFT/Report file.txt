@@ -31,29 +31,42 @@ RecursiveFFT(a):
 
 RecursiveFFTinv(a):
 	(CHANGE in RecursiveFFT(a)): w_n = cos(-2*pi/n) + i*sin(-2*pi/n)
+
+possible parallelizations:
+in prod_fourier - recursiveFFT(c) with 2 threads
+in recursive FFT - filter + recursiveFFT with 2 threads and rest part serially after joining
+in point_multiply - for loop can be parallelized
+in recursiveFFTinv - similar to recursiveFFT
+in recursiveFFTinv_wrapper - for loop can be parallelized
 ______________________________________________________________________________________________
 
 Theoretical Analysis:
 Upto recursiveFFT, derivation of result is straight forward. To prove the correctness of expression
 on which recursiveFFTinv has been coded, we use the concept that summation of n roots of unity is zero.
+
+T_1(n) = 2*T_1(n/2) + O(n) = O(nlog(n))
+T_inf(n) = T_inf(n/2) + O(n) = O(n)
+Parallelism = O(n)
 ______________________________________________________________________________________________
 
 Program Analysis:
-Use of template supports any type of coeffecient including complex coeffecient.
+Template supports any type of coeffecient including complex coeffecient.
 Minimum data movement has been done - optimised version of sequentialFFT.
-Non 2^k case has been also dealt.
+Non 2^k case has also been dealt.
 Future along with asynchronous function has been used in thread version.
 An asynchronous operation like async or promise provide a future object to the creator of asynchronous 
-operation. The method is blocked if future has not provided any value. 
+operation. The method is blocked if future has not provided any value.
+
+Time analysis in running.ods file sheet1 and sheet2
 ______________________________________________________________________________________________
 
 Experimental Analysis:
-The running time for higher input in case of sequential O(n^2) and O(nlog(n)) is contrasting but
-parallel version does not give a better performance. Reasons could be high overhead in managing 
-so many threads.
+The running time for higher input in case of sequential O(n^2) and O(nlog(n)) is contrasting where 
+O(nlog(n)) beats O(n^2) at n^7. Parallel version gives a better performance than sequential O(nlog(n))
+with O3 optimization. With openmp, performance is not good because of overhead.
 ______________________________________________________________________________________________
 
 Conclusion:
-From the observation from running time between optimised sequential and parallel code, it can be 
+From the observation from running time between optimized sequential and parallel code, it can be 
 concluded that parallelization is good in the senario where there are many pyhsical processors available
-to process tasks parallely.
+to process tasks parellely.

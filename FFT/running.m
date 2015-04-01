@@ -1,0 +1,11 @@
+clear;
+clc;
+fileID = fopen('running_time.txt','r');
+formatSpec = '%f %f';
+sizeA = [2 Inf];
+A = fscanf(fileID,formatSpec,sizeA);
+fclose(fileID);
+B=A';
+plot(B(:,1),'-r');
+hold on;
+plot(B(:,2),'-b');
